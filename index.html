@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Knowledge Chatbot - Enhanced</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .chat-container {
+            height: calc(100vh - 2rem);
+        }
+        
+        .message-user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .message-bot {
+            background: white;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #6b7280;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Scrollbar styling */
+        .messages-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .messages-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        
+        .messages-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        
+        .messages-container::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* Source highlighting */
+        .source-info {
+            background: #f8fafc;
+            border-left: 3px solid #3b82f6;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-4">
+    <!-- Main Container -->
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <i data-lucide="stethoscope" class="w-6 h-6 text-white"></i>
+                </div>
+                <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Medical Knowledge Chatbot
+                </h1>
+            </div>
+            <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+                Enhanced AI assistant powered by medical literature using improved embedding models
+            </p>
+            <div class="flex items-center justify-center gap-4 mt-4 text-sm text-gray-500">
+                <div class="flex items-center gap-1">
+                    <i data-lucide="cpu" class="w-4 h-4"></i>
+                    <span>all-MiniLM-L12-v2</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <i data-lucide="database" class="w-4 h-4"></i>
+                    <span>Enhanced RAG System</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <i data-lucide="zap" class="w-4 h-4"></i>
+                    <span>Optimized Performance</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Interface -->
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden chat-container flex flex-col">
+            <!-- Chat Header -->
+            <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                            <i data-lucide="brain" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-semibold">Medical AI Assistant</h2>
+                            <p class="text-blue-100 text-sm">Ask questions about medical topics</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div id="status-indicator" class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-sm">
+                            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                            <span>System Ready</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages Container -->
+            <div id="messages-container" class="messages-container flex-1 p-6 space-y-4 overflow-y-auto">
+                <!-- Welcome Message -->
+                <div class="message-bot rounded-2xl p-4 shadow-sm max-w-3xl">
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="bot" class="w-4 h-4 text-blue-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-medium text-gray-900 mb-1">Medical AI Assistant</div>
+                            <div class="text-gray-700">
+                                <p>Hello! I'm your enhanced medical knowledge assistant. I can answer questions from medical literature using improved AI models.</p>
+                                <div class="mt-3 p-3 bg-blue-50 rounded-lg">
+                                    <p class="text-sm font-medium text-blue-800 mb-2">💡 Try asking:</p>
+                                    <ul class="text-sm text-blue-700 space-y-1">
+                                        <li>• "What is the age of inactivity and obesity?"</li>
+                                        <li>• "Explain cardiac excitability"</li>
+                                        <li>• "What causes hypertension?"</li>
+                                        <li>• "What are diabetes symptoms?"</li>
+                                    </ul>
+                                </div>
+                                <div class="mt-2 text-xs text-gray-500">
+                                    Type 'help' for more commands
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="border-t border-gray-200 p-6 bg-gray-50">
+                <div class="flex gap-3 max-w-4xl mx-auto">
+                    <div class="flex-1 relative">
+                        <input 
+                            type="text" 
+                            id="user-input" 
+                            placeholder="Ask a medical question (e.g., 'What is hypertension?')" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-900 placeholder-gray-500"
+                            autocomplete="off"
+                        >
+                        <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                            <i data-lucide="message-circle" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <button 
+                        id="send-button"
+                        onclick="sendMessage()"
+                        class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 active:scale-95 flex items-center gap-2 font-medium shadow-lg"
+                    >
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                        Send
+                    </button>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="max-w-4xl mx-auto mt-4">
+                    <div class="flex flex-wrap gap-2 justify-center">
+                        <button onclick="insertQuickQuestion('What is the age of inactivity and obesity?')" class="px-3 py-2 text-xs bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700">
+                            Age & Obesity
+                        </button>
+                        <button onclick="insertQuickQuestion('Explain cardiac excitability')" class="px-3 py-2 text-xs bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700">
+                            Cardiac Excitability
+                        </button>
+                        <button onclick="insertQuickQuestion('What causes hypertension?')" class="px-3 py-2 text-xs bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700">
+                            Hypertension Causes
+                        </button>
+                        <button onclick="insertQuickQuestion('What are diabetes symptoms?')" class="px-3 py-2 text-xs bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700">
+                            Diabetes Symptoms
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-6 text-gray-500 text-sm">
+            <p>Enhanced Medical RAG System • Powered by improved embedding models • Built for reliable medical information</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Configuration
+        const CONFIG = {
+            API_BASE: 'http://localhost:5000',
+            MAX_MESSAGE_LENGTH: 2000
+        };
+
+        // State management
+        let chatState = {
+            isProcessing: false,
+            messageHistory: []
+        };
+
+        // DOM Elements
+        const messagesContainer = document.getElementById('messages-container');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const statusIndicator = document.getElementById('status-indicator');
+
+        // Utility Functions
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function formatMessage(text) {
+            if (!text) return '';
+            
+            // Convert markdown-style formatting
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n/g, '<br>')
+                .replace(/📚 Sources:/g, '<div class="source-info mt-3 p-3 rounded-lg"><strong>📚 Sources:</strong>')
+                .replace(/•/g, '<br>•');
+        }
+
+        function addMessage(content, sender, isTyping = false) {
+            const messageDiv = document.createElement('div');
+            const messageId = 'msg-' + Date.now();
+            
+            if (sender === 'user') {
+                messageDiv.className = 'message-user text-white rounded-2xl p-4 shadow-lg max-w-3xl ml-auto';
+                messageDiv.innerHTML = `
+                    <div class="flex items-start gap-3 flex-row-reverse">
+                        <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="user" class="w-4 h-4"></i>
+                        </div>
+                        <div class="flex-1 text-right">
+                            <div class="font-medium opacity-90 mb-1">You</div>
+                            <div class="opacity-95">${formatMessage(content)}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                messageDiv.className = 'message-bot rounded-2xl p-4 shadow-sm max-w-3xl';
+                messageDiv.id = messageId;
+                
+                if (isTyping) {
+                    messageDiv.innerHTML = `
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="bot" class="w-4 h-4 text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-gray-900 mb-1">Medical AI Assistant</div>
+                                <div class="text-gray-700 typing-indicator">
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="bot" class="w-4 h-4 text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-gray-900 mb-1">Medical AI Assistant</div>
+                                <div class="text-gray-700">${formatMessage(content)}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+            
+            if (!isTyping && sender === 'bot') {
+                // Re-initialize icons for new message
+                lucide.createIcons();
+            }
+            
+            return messageId;
+        }
+
+        function setUIState(processing) {
+            chatState.isProcessing = processing;
+            userInput.disabled = processing;
+            sendButton.disabled = processing;
+            
+            if (processing) {
+                sendButton.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Processing...';
+                sendButton.classList.add('opacity-50');
+            } else {
+                sendButton.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> Send';
+                sendButton.classList.remove('opacity-50');
+                userInput.focus();
+            }
+            
+            lucide.createIcons();
+        }
+
+        // API Functions
+        async function sendMessageToBackend(message) {
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.response || 'No response received from the server.';
+
+            } catch (error) {
+                console.error('API Error:', error);
+                throw new Error('Failed to connect to the medical knowledge server. Please check if the backend is running.');
+            }
+        }
+
+        async function checkServerStatus() {
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/status`);
+                const data = await response.json();
+                return data.status === 'ready';
+            } catch (error) {
+                return false;
+            }
+        }
+
+        // Main Message Handler
+        async function sendMessage() {
+            if (chatState.isProcessing) return;
+            
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // Add user message
+            addMessage(message, 'user');
+            userInput.value = '';
+            
+            // Add typing indicator
+            const typingId = addMessage('', 'bot', true);
+            setUIState(true);
+
+            try {
+                // Check server status first
+                const isServerReady = await checkServerStatus();
+                if (!isServerReady) {
+                    throw new Error('Medical knowledge server is not ready. Please ensure the backend is running.');
+                }
+
+                // Send to backend
+                const response = await sendMessageToBackend(message);
+                
+                // Remove typing indicator and add actual response
+                document.getElementById(typingId)?.remove();
+                addMessage(response, 'bot');
+                
+                // Update chat history
+                chatState.messageHistory.push({ role: 'user', content: message });
+                chatState.messageHistory.push({ role: 'assistant', content: response });
+                
+            } catch (error) {
+                // Remove typing indicator and show error
+                document.getElementById(typingId)?.remove();
+                addMessage(`❌ ${error.message}`, 'bot');
+                console.error('Chat error:', error);
+            } finally {
+                setUIState(false);
+            }
+        }
+
+        // Quick Actions
+        function insertQuickQuestion(question) {
+            userInput.value = question;
+            userInput.focus();
+        }
+
+        // Event Listeners
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            userInput.focus();
+            
+            // Check server status on load
+            checkServerStatus().then(isReady => {
+                if (isReady) {
+                    statusIndicator.innerHTML = '<div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div><span>System Ready</span>';
+                } else {
+                    statusIndicator.innerHTML = '<div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div><span>Connecting...</span>';
+                }
+            });
+        });
+
+        // Help command handler
+        function showHelp() {
+            const helpMessage = `
+🏥 Medical Knowledge Chatbot - Enhanced Version
+
+I provide answers from medical literature using improved embedding models.
+
+**Try asking:**
+• "What is the age of inactivity and obesity?"
+• "Explain cardiac excitability" 
+• "What causes hypertension?"
+• "What are diabetes symptoms?"
+
+**Commands:**
+• 'help' - Show this message
+• 'reset' - Clear chat history
+• 'status' - Check system status
+• 'exit' - End conversation
+
+**System Features:**
+• Enhanced all-MiniLM-L12-v2 embeddings
+• Optimized RAG retrieval
+• Source citation from medical literature
+            `.trim();
+            
+            addMessage(helpMessage, 'bot');
+        }
+    </script>
+</body>
+</html>z

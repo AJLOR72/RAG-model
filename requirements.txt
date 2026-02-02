@@ -1,0 +1,9 @@
+flask==2.3.3
+flask-cors==4.0.0
+langchain-huggingface==0.0.1
+langchain-chroma==0.0.1
+langchain-community==0.0.1
+langchain-text-splitters==0.0.1
+langchain-core==0.1.0
+sentence-transformers==2.2.2
+pypdf==3.17.0
